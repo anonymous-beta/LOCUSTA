@@ -1,0 +1,215 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Save, Key, Shield, Globe, Palette, Bell } from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8443/api';
+
+interface SettingsPanelProps {
+  token: string;
+}
+
+export default function SettingsPanel({ token }: SettingsPanelProps) {
+  const [activeTab, setActiveTab] = useState('general');
+  const [settings, setSettings] = useState({
+    theme: 'dark',
+    log_level: 'info',
+    notifications: { email: false, webhook: false, desktop: true },
+    proxy: { type: 'none', list: '', rotate: false },
+    doh: false,
+    session_timeout: 480,
+    totp_enabled: false
+  });
+
+  const headers = { Authorization: `Bearer ${token}` };
+
+  const saveSettings = async () => {
+    try {
+      await axios.post(`${API_URL}/settings`, settings, { headers });
+      alert('Settings saved');
+    } catch (e) {
+      console.error('Save failed');
+    }
+  };
+
+  const tabs = [
+    { id: 'general', label: 'General', icon: Palette },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'network', label: 'Network', icon: Globe },
+    { id: 'notifications', label: 'Alerts', icon: Bell }
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="flex gap-4 mb-6">
+        {tabs.map(tab => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`hex-button ${activeTab === tab.id ? 'hex-button-primary' : ''}`}
+            >
+              <Icon className="w-4 h-4 inline mr-2" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="panel"
+      >
+        <div className="panel-header">Hive Preferences</div>
+        <div className="panel-body space-y-6">
+          {activeTab === 'general' && (
+            <>
+              <div>
+                <label className="block text-sm font-orbitron text-amber mb-2">THEME</label>
+                <select 
+                  value={settings.theme}
+                  onChange={e => setSettings({...settings, theme: e.target.value})}
+                  className="select-field w-full"
+                >
+                  <option value="dark">Dark (Void)</option>
+                  <option value="light">Light</option>
+                  <option value="amber">LOCUSTA Amber</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-orbitron text-amber mb-2">LOG LEVEL</label>
+                <select 
+                  value={settings.log_level}
+                  onChange={e => setSettings({...settings, log_level: e.target.value})}
+                  className="select-field w-full"
+                >
+                  <option value="debug">Debug</option>
+                  <option value="info">Info</option>
+                  <option value="warning">Warning</option>
+                  <option value="error">Error</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'security' && (
+            <>
+              <div className="flex items-center justify-between py-3 border-b border-amber/10">
+                <div>
+                  <div className="font-medium">Two-Factor Authentication</div>
+                  <div className="text-sm text-warm/60">Require TOTP for login</div>
+                </div>
+                <button 
+                  onClick={() => setSettings({...settings, totp_enabled: !settings.totp_enabled})}
+                  className={`w-12 h-6 rounded-full transition-colors ${settings.totp_enabled ? 'bg-amber' : 'bg-honeycomb'}`}
+                >
+                  <div className={`w-5 h-5 rounded-full bg-void transition-transform ${settings.totp_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+              <div>
+                <label className="block text-sm font-orbitron text-amber mb-2">SESSION TIMEOUT (minutes)</label>
+                <input
+                  type="number"
+                  value={settings.session_timeout}
+                  onChange={e => setSettings({...settings, session_timeout: parseInt(e.target.value)})}
+                  className="input-field"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-orbitron text-amber mb-2">IP WHITELIST</label>
+                <textarea
+                  placeholder="One IP per line..."
+                  className="input-field h-24 resize-none"
+                />
+              </div>
+              <button className="hex-button">
+                <Key className="w-4 h-4 inline mr-2" />
+                Regenerate API Keys
+              </button>
+            </>
+          )}
+
+          {activeTab === 'network' && (
+            <>
+              <div>
+                <label className="block text-sm font-orbitron text-amber mb-2">PROXY TYPE</label>
+                <select 
+                  value={settings.proxy.type}
+                  onChange={e => setSettings({...settings, proxy: {...settings.proxy, type: e.target.value}})}
+                  className="select-field w-full"
+                >
+                  <option value="none">Direct Connection</option>
+                  <option value="static">Static Proxy List</option>
+                  <option value="rotating">Rotating Proxy Service</option>
+                  <option value="tor">Tor Network</option>
+                </select>
+              </div>
+              {settings.proxy.type === 'static' && (
+                <div>
+                  <label className="block text-sm font-orbitron text-amber mb-2">PROXY LIST</label>
+                  <textarea
+                    value={settings.proxy.list}
+                    onChange={e => setSettings({...settings, proxy: {...settings.proxy, list: e.target.value}})}
+                    placeholder="http://proxy1:8080&#10;socks5://proxy2:1080"
+                    className="input-field h-24 resize-none font-jetbrains"
+                  />
+                </div>
+              )}
+              <div className="flex items-center justify-between py-3">
+                <div>
+                  <div className="font-medium">DNS over HTTPS</div>
+                  <div className="text-sm text-warm/60">Encrypt DNS queries</div>
+                </div>
+                <button 
+                  onClick={() => setSettings({...settings, doh: !settings.doh})}
+                  className={`w-12 h-6 rounded-full transition-colors ${settings.doh ? 'bg-amber' : 'bg-honeycomb'}`}
+                >
+                  <div className={`w-5 h-5 rounded-full bg-void transition-transform ${settings.doh ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'notifications' && (
+            <>
+              {[
+                { key: 'email', label: 'Email Alerts', desc: 'Receive campaign summaries via email' },
+                { key: 'webhook', label: 'Webhook', desc: 'POST events to custom endpoint' },
+                { key: 'desktop', label: 'Desktop Notifications', desc: 'Browser notifications for critical events' }
+              ].map(({ key, label, desc }) => (
+                <div key={key} className="flex items-center justify-between py-3 border-b border-amber/10">
+                  <div>
+                    <div className="font-medium">{label}</div>
+                    <div className="text-sm text-warm/60">{desc}</div>
+                  </div>
+                  <button 
+                    onClick={() => setSettings({
+                      ...settings, 
+                      notifications: {
+                        ...settings.notifications, 
+                        [key]: !settings.notifications[key as keyof typeof settings.notifications]
+                      }
+                    })}
+                    className={`w-12 h-6 rounded-full transition-colors ${settings.notifications[key as keyof typeof settings.notifications] ? 'bg-amber' : 'bg-honeycomb'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-full bg-void transition-transform ${settings.notifications[key as keyof typeof settings.notifications] ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+
+          <div className="pt-4 border-t border-amber/20">
+            <button onClick={saveSettings} className="hex-button hex-button-primary">
+              <Save className="w-4 h-4 inline mr-2" />
+              Save Preferences
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
