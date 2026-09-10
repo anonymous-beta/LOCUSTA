@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-void text-warm font-inter antialiased;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-void;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-honeycomb rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-amber;
+  }
+}
+
+@layer components {
+  .hex-border {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  
+  .hex-button {
+    @apply relative px-6 py-3 font-orbitron text-sm tracking-wider uppercase;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    transition: all 0.3s ease;
+  }
+  
+  .hex-button:hover {
+    background: linear-gradient(135deg, #e88a1e 0%, #c06a10 100%);
+    color: #0a0a0a;
+    box-shadow: 0 0 20px rgba(232, 138, 30, 0.5);
+  }
+  
+  .hex-button:active {
+    transform: scale(0.95);
+  }
+  
+  .hex-button-primary {
+    @apply bg-gradient-to-br from-amber to-amber-dark text-void;
+  }
+  
+  .hex-button-primary:hover {
+    box-shadow: 0 0 30px rgba(232, 138, 30, 0.8);
+  }
+  
+  .hex-button-danger {
+    @apply bg-gradient-to-br from-blood to-red-800 text-warm;
+  }
+  
+  .hex-button-danger:hover {
+    box-shadow: 0 0 30px rgba(235, 77, 75, 0.8);
+  }
+  
+  .panel {
+    @apply bg-honeycomb/50 backdrop-blur-sm border border-amber/20 rounded-lg;
+  }
+  
+  .panel-header {
+    @apply px-4 py-3 border-b border-amber/20 font-orbitron text-sm tracking-wider text-amber uppercase;
+  }
+  
+  .panel-body {
+    @apply p-4;
+  }
+  
+  .status-dot {
+    @apply inline-block w-2 h-2 rounded-full mr-2;
+  }
+  
+  .status-active { @apply bg-chlorophyll; }
+  .status-idle { @apply bg-wheat; }
+  .status-offline { @apply bg-blood; }
+  .status-quarantined { @apply bg-purple-500; }
+  
+  .log-entry {
+    @apply py-2 px-3 border-l-2 font-jetbrains text-sm;
+  }
+  
+  .log-info { @apply border-blue-500/50 text-blue-300; }
+  .log-warning { @apply border-wheat/50 text-wheat; }
+  .log-critical { @apply border-blood/50 text-blood; }
+  .log-success { @apply border-chlorophyll/50 text-chlorophyll; }
+  
+  .input-field {
+    @apply w-full px-4 py-2 bg-void border border-amber/30 rounded text-warm font-jetbrains text-sm;
+    @apply focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber/50;
+    @apply placeholder:text-warm/30;
+  }
+  
+  .select-field {
+    @apply px-3 py-2 bg-void border border-amber/30 rounded text-warm font-jetbrains text-sm;
+    @apply focus:outline-none focus:border-amber;
+  }
+}
+
+/* Hex grid background */
+.hex-grid {
+  background-image: 
+    linear-gradient(30deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
+    linear-gradient(150deg, #2a2a2a 12%, transparent 12.5%, transparent 87%, #2a2a2a 87.5%, #2a2a2a),
+    linear-gradient(60deg, #2a2a2a 25%, transparent 25.5%, transparent 75%, #2a2a2a 75%, #2a2a2a),
+    linear-gradient(120deg, #2a2a2a 25%, transparent 25.5%, transparent 75%, #2a2a2a 75%, #2a2a2a);
+  background-size: 80px 140px;
+  background-position: 0 0, 0 0, 40px 70px, 40px 70px;
+  opacity: 0.05;
+}
+
+/* Particle animation */
+@keyframes particle {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #e88a1e;
+  border-radius: 50%;
+  animation: particle 10s linear infinite;
+}
