@@ -1,7 +1,7 @@
 # LOCUSTA
 
 <p align="center">
-  <img src="logo.svg" alt="LOCUSTA" width="180">
+  <img src="logo-1.svg" alt="LOCUSTA" width="180">
 </p>
 
 <p align="center">
