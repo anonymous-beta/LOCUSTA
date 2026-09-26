@@ -1,18 +1,37 @@
-# Build stage
+# -----------------------------------------------------------------------------
+# LOCUSTA Frontend
+# React build -> Nginx production image
+# -----------------------------------------------------------------------------
+
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Install dependencies first for better Docker layer caching.
 COPY package.json package-lock.json* ./
+
 RUN npm install
 
+# Copy the React application.
 COPY . .
+
+# Build the production frontend.
 RUN npm run build
 
-# Production stage
+
+# -----------------------------------------------------------------------------
+# Production image
+# -----------------------------------------------------------------------------
+
 FROM nginx:alpine
 
+# Remove the default Nginx site configuration.
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+# Copy the React production build.
 COPY --from=builder /app/build /usr/share/nginx/html
+
+# nginx.conf is copied separately by Compose's root build context.
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
