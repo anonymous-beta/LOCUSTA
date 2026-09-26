@@ -1,32 +1,66 @@
+# -----------------------------------------------------------------------------
+# LOCUSTA C2
+# Flask + Flask-SocketIO backend
+# -----------------------------------------------------------------------------
+
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libffi-dev \
-    libssl-dev \
+# -----------------------------------------------------------------------------
+# System dependencies
+# -----------------------------------------------------------------------------
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        libffi-dev \
+        libssl-dev \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY backend/requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# -----------------------------------------------------------------------------
+# Python dependencies
+# -----------------------------------------------------------------------------
 
-# Copy application
-COPY backend/ .
+COPY backend/requirements.txt /app/requirements.txt
 
-# Create data directory
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+
+# -----------------------------------------------------------------------------
+# Application
+# -----------------------------------------------------------------------------
+
+COPY backend/ /app/
+
+
+# -----------------------------------------------------------------------------
+# Persistent application data
+# -----------------------------------------------------------------------------
+
 RUN mkdir -p /app/data
 
-# Expose ports
-EXPOSE 8443 9443
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8443/api/health')"
+# -----------------------------------------------------------------------------
+# Runtime configuration
+# -----------------------------------------------------------------------------
 
-# Run
+ENV PYTHONUNBUFFERED=1
+ENV LOCUSTA_PORT=8443
+ENV LOCUSTA_DB=/app/data/locusta.db
+
+
+# -----------------------------------------------------------------------------
+# Network
+# -----------------------------------------------------------------------------
+
+EXPOSE 8443
+
+
+# -----------------------------------------------------------------------------
+# Start LOCUSTA
+# -----------------------------------------------------------------------------
+
 CMD ["python", "app.py"]
