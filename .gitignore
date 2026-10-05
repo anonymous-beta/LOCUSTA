@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# App data
+*.db
+*.sqlite3
+.env
+.env.*
+
+# Node / frontend
+node_modules/
+frontend/build/
+frontend/.cache/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Logs
+*.log
+
+# Docker
+*.tar

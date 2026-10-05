@@ -1674,12 +1674,17 @@ if __name__ == '__main__':
     logger.info(f"LOCUSTA C2 starting on port {Config.C2_PORT}")
     logger.info(f"Worker comms on port {Config.WORKER_PORT}")
     
-    socketio.run(
-        app,
-        host='0.0.0.0',
-        port=Config.C2_PORT,
-        debug=Config.DEBUG,
-        certfile=os.environ.get('LOCUSTA_SSL_CERT'),
-        keyfile=os.environ.get('LOCUSTA_SSL_KEY'),
-        use_reloader=False
-    )
+    certfile = os.environ.get('LOCUSTA_SSL_CERT')
+    keyfile = os.environ.get('LOCUSTA_SSL_KEY')
+
+    run_kwargs = {
+        'host': '0.0.0.0',
+        'port': Config.C2_PORT,
+        'debug': Config.DEBUG,
+        'use_reloader': False,
+    }
+
+    if certfile and keyfile:
+        run_kwargs['ssl_context'] = (certfile, keyfile)
+
+    socketio.run(app, **run_kwargs)
