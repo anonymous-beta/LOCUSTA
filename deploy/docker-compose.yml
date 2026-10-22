@@ -1,17 +1,55 @@
+services:
+locusta-c2:
+build:
+context: ..
+dockerfile: deploy/Dockerfile.c2
+container_name: locusta-c2
+restart: unless-stopped
+environment:
+LOCUSTA_SECRET: ${LOCUSTA_SECRET:?Set LOCUSTA_SECRET in deploy/.env}
+LOCUSTA_JWT_SECRET: ${LOCUSTA_JWT_SECRET:?Set LOCUSTA_JWT_SECRET in deploy/.env}
+LOCUSTA_ADMIN_PASS: ${LOCUSTA_ADMIN_PASS:?Set LOCUSTA_ADMIN_PASS in deploy/.env}
+LOCUSTA_DB: /app/data/locusta.db
+LOCUSTA_PORT: "8443"
+LOCUSTA_DEBUG: "false"
+LOCUSTA_AI_ENABLED: ${LOCUSTA_AI_ENABLED:-false}
+LOCUSTA_AI_KEY: ${LOCUSTA_AI_KEY:-}
+LOCUSTA_CORS: http://localhost:3000
+LOCUSTA_AUTO_EXECUTE: "false"
+ports:
+- "127.0.0.1:8443:8443"
+volumes:
+- locusta-data:/app/data
+networks:
+- hive-network
+healthcheck:
+test:
+- CMD
+- python
+- -c
+- "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8443/api/health', timeout=3)"
+interval: 15s
+timeout: 5s
+retries: 5
+start_period: 20s
+
 locusta-frontend:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile.frontend
+build:
+context: ..
+dockerfile: deploy/Dockerfile.frontend
+container_name: locusta-frontend
+restart: unless-stopped
+ports:
+- "3000:80"
+depends_on:
+locusta-c2:
+condition: service_healthy
+networks:
+- hive-network
 
-    container_name: locusta-frontend
+networks:
+hive-network:
+driver: bridge
 
-    ports:
-      - "3000:80"
-
-    depends_on:
-      - locusta-c2
-
-    restart: unless-stopped
-
-    networks:
-      - hive-network
+volumes:
+locusta-data:
